@@ -1,6 +1,6 @@
 # fdlogs
 
-A rather simple python application that allows a user to tail logs of a docker container by executing `docker logs -f`. 
+fdlogs (`f`ollow `d`ocker `logs`) is a rather simple python application that allows a user to tail logs of a docker container by executing `docker logs -f`. 
 It however continues to run when the container is stopped/restarted/re-created - once the container is back online 
 new log entries are printed to the screen.
 
@@ -10,7 +10,7 @@ new log entries are printed to the screen.
 
 `$ cd fdlogs`
 
-`# sudo pip install .`
+`$ sudo pip install .`
 
 ## Usage
 
