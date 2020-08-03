@@ -1,3 +1,5 @@
+import pathlib
+
 from setuptools import setup
 
 setup(name='fdlogs',
@@ -7,6 +9,8 @@ setup(name='fdlogs',
       packages=['fdlogs'],
       scripts=['bin/fdlogs'],
       description="Follow docker container logs and survive restarts",
+      long_description=(pathlib.Path(__file__).parent / "README.md").read_text(),
+      long_description_content_type="text/markdown",
       install_requires=['argparse'],
       license="GPLv2",
       platforms=["Independent"],
