@@ -14,8 +14,9 @@ def check(container_name) -> str:
     :param container_name: name of the docker container
     :return: container ID or empty string if container with this name is not running
     """
-    return subprocess.run(["docker", "ps", "-f", "name={}".format(container_name), "--format", "{{.ID}}"],
-                          capture_output=True).stdout.decode().strip()
+    return subprocess.run(
+        ["docker", "ps", "--no-trunc", "--filter", 'name=^/{}$'.format(container_name), "--format", "{{.ID}}"],
+        capture_output=True).stdout.decode().strip()
 
 
 def follow(container_name):
@@ -23,7 +24,7 @@ def follow(container_name):
     Issue a 'docker logs -f' for our container and continue yielding lines of output until the container is running
     :param container_name: name of the docker container
     """
-    p = subprocess.Popen(["docker", "logs", "-f", container_name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(["docker", "logs", "-f", container_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while True:
         return_code = p.poll()
         line = p.stdout.readline()
