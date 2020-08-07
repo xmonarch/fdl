@@ -61,12 +61,12 @@ def monitor(args):
                     container_id = new_container_id
 
                 waiting_for_online = False
-                log.log(logging.INFO, f"following container \"{args}\" with id {container_id}")
+                log.log(logging.INFO, f"following container \"{args.container_name}\" with id {container_id}")
 
                 lines = 0
                 for line in follow(args.container_name):
                     if lines >= skip:
-                        print(line.decode(), end='')
+                        print(line.decode(), file=sys.stdout, flush=True, end='')
                     lines += 1
             else:
                 if not waiting_for_online:
