@@ -2,10 +2,7 @@ import logging
 import subprocess
 import sys
 import time
-
 import argparse
-
-LOG = logging.getLogger("fdlogs")
 
 
 def check(container_name) -> str:
@@ -15,7 +12,7 @@ def check(container_name) -> str:
     :return: container ID or empty string if container with this name is not running
     """
     return subprocess.run(
-        ["docker", "ps", "--no-trunc", "--filter", 'name=^/{}$'.format(container_name), "--format", "{{.ID}}"],
+        ["docker", "ps", "--no-trunc", "--filter", f'name=^/{container_name}$', "--format", "{{.ID}}"],
         capture_output=True).stdout.decode().strip()
 
 
@@ -43,6 +40,7 @@ def monitor(args):
     """
     logging.basicConfig(level=args.log_level, stream=sys.stdout, datefmt="%Y-%m-%d %H:%M:%S",
                         format="[%(asctime)s] %(levelname)s %(name)s %(message)s")
+    log = logging.getLogger("fdlogs")
 
     try:
         waiting_for_online = False
@@ -59,15 +57,11 @@ def monitor(args):
                         skip = lines
                 else:
                     if container_id:
-                        LOG.log(logging.INFO,
-                                "noticed container id change from {} to {}".format(container_id,
-                                                                                   new_container_id))
+                        log.log(logging.INFO, f"noticed container id change from {container_id} to {new_container_id}")
                     container_id = new_container_id
 
                 waiting_for_online = False
-                LOG.log(logging.INFO,
-                        "following container \"{}\" with id {}".format(args.container_name,
-                                                                       container_id))
+                log.log(logging.INFO, f"following container \"{args}\" with id {container_id}")
 
                 lines = 0
                 for line in follow(args.container_name):
@@ -76,8 +70,7 @@ def monitor(args):
                     lines += 1
             else:
                 if not waiting_for_online:
-                    LOG.log(logging.WARNING,
-                            "waiting for container \"{}\" to become active...".format(args.container_name))
+                    log.log(logging.WARNING, f"waiting for container \"{args.container_name}\" to become active...")
                 waiting_for_online = True
                 time.sleep(args.interval)
     except KeyboardInterrupt:

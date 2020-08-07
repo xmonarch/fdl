@@ -21,3 +21,7 @@ As simple as:
 For more details run:
 
 `$ fdlogs --help`
+
+## TODO
+
+- provide docker name autocomplete bash/zsh/fish
