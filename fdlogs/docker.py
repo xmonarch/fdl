@@ -57,11 +57,12 @@ def monitor(args):
                         skip = lines
                 else:
                     if container_id:
-                        log.log(logging.INFO, f"noticed container id change from {container_id} to {new_container_id}")
+                        log.log(logging.INFO,
+                                f"noticed container id change from {container_id[:12]} to {new_container_id[:12]}")
                     container_id = new_container_id
 
                 waiting_for_online = False
-                log.log(logging.INFO, f"following container \"{args.container_name}\" with id {container_id}")
+                log.log(logging.INFO, f"following container \"{args.container_name}\" with id {container_id[:12]}")
 
                 lines = 0
                 for line in follow(args.container_name):
