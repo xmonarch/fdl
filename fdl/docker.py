@@ -40,7 +40,7 @@ def monitor(args):
     """
     logging.basicConfig(level=args.log_level, stream=sys.stdout, datefmt="%Y-%m-%d %H:%M:%S",
                         format="[%(asctime)s] %(levelname)s %(name)s %(message)s")
-    log = logging.getLogger("fdlogs")
+    log = logging.getLogger("fdl")
 
     try:
         waiting_for_online = False

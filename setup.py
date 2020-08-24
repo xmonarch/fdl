@@ -2,12 +2,12 @@ import pathlib
 
 from setuptools import setup
 
-setup(name='fdlogs',
+setup(name='fdl',
       version='0.1.0',
       author='xmonarch',
       author_email='xmonarch64@gmail.com',
-      packages=['fdlogs'],
-      scripts=['bin/fdlogs'],
+      packages=['fdl'],
+      scripts=['bin/fdl'],
       description="Follow docker container logs and survive restarts",
       long_description=(pathlib.Path(__file__).parent / "README.md").read_text(),
       long_description_content_type="text/markdown",
@@ -15,7 +15,7 @@ setup(name='fdlogs',
       license="GPLv2",
       platforms=["Independent"],
       keywords="docker logs follow",
-      url="https://github.com/xmonarch/fdlogs",
+      url="https://github.com/xmonarch/fdl",
       classifiers=[
           "Intended Audience :: Developers",
           "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
