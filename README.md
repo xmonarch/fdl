@@ -6,22 +6,20 @@ new log entries are printed to the screen.
 
 ## Installation
 
-`$ git clone https://github.com/xmonarch/fdl.git`
-
-`$ cd fdl`
-
-`$ sudo pip install .`
+```shell
+$ git clone https://github.com/xmonarch/fdl.git
+$ cd fdl
+$ sudo pip install .
+```
 
 ## Usage
 
 As simple as:
-
-`$ fdl my_docker_container_name`
+```shell
+$ fdl my_docker_container_name
+```
 
 For more details run:
-
-`$ fdl --help`
-
-## TODO
-
-- provide docker name autocomplete bash/zsh/fish
+```shell
+$ fdl --help
+```

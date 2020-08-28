@@ -84,7 +84,8 @@ def run():
     """
     parser = argparse.ArgumentParser(description="Follow docker container logs and survive restarts")
     parser.add_argument("container_name",
-                        help="name of the docker container to obtain logs from")
+                        help="name of the docker container to obtain logs from",
+                        choices=('http', 'https', 'ssh', 'rsync', 'wss'))
     parser.add_argument("-q",
                         "--quiet",
                         dest="log_level",
