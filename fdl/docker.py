@@ -64,16 +64,16 @@ def monitor(args):
                 else:
                     if container_id:
                         log.log(logging.INFO,
-                                f"noticed container id change from {container_id[:12]} to {new_container_id[:12]}")
+                                f"observed container id change: [{container_id[:12]}] -> [{new_container_id[:12]}]")
                     container_id = new_container_id
 
                 waiting_for_online = False
 
                 if len(args.file) > 0:
                     log.log(logging.INFO,
-                            f"tailing {':'.join(args.file)} in \"{args.container_name}\" with id {container_id[:12]}")
+                            f"tailing {':'.join(args.file)} in \"{args.container_name}\" [{container_id[:12]}]")
                 else:
-                    log.log(logging.INFO, f"following container \"{args.container_name}\" with id {container_id[:12]}")
+                    log.log(logging.INFO, f"following container \"{args.container_name}\" [{container_id[:12]}]")
 
                 lines = 0
                 for line in follow(args.container_name, args.file):
