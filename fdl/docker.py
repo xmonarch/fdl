@@ -5,7 +5,7 @@ import time
 import argparse
 
 
-def check(container_name) -> str:
+def check(container_name: str) -> str:
     """
     Check if docker container is running and return container ID if it is
     :param container_name: name of the docker container
@@ -16,12 +16,17 @@ def check(container_name) -> str:
         capture_output=True).stdout.decode().strip()
 
 
-def follow(container_name):
+def follow(container_name: str, file: str = None):
     """
     Issue a 'docker logs -f' for our container and continue yielding lines of output until the container is running
     :param container_name: name of the docker container
+    :param file: optionally a file to tail instead of docker logs
     """
-    p = subprocess.Popen(["docker", "logs", "-f", container_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if file:
+        command = ["docker", "exec", container_name, "tail", "-n", "0", "-F", file]
+    else:
+        command = ["docker", "logs", "-f", container_name]
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while True:
         return_code = p.poll()
         line = p.stdout.readline()
@@ -53,7 +58,7 @@ def monitor(args):
                 if container_id == new_container_id:
                     # when the same container is resumed we need to hide the lines that were already displayed
                     # on the terminal, since 'docker logs -f' will return old output as well
-                    if args.skip_enabled:
+                    if args.skip_enabled and not args.file:
                         skip = lines
                 else:
                     if container_id:
@@ -62,10 +67,15 @@ def monitor(args):
                     container_id = new_container_id
 
                 waiting_for_online = False
-                log.log(logging.INFO, f"following container \"{args.container_name}\" with id {container_id[:12]}")
+
+                if args.file:
+                    log.log(logging.INFO,
+                            f"tailing {args.file} in \"{args.container_name}\" with id {container_id[:12]}")
+                else:
+                    log.log(logging.INFO, f"following container \"{args.container_name}\" with id {container_id[:12]}")
 
                 lines = 0
-                for line in follow(args.container_name):
+                for line in follow(args.container_name, args.file):
                     if lines >= skip:
                         print(line.decode(), file=sys.stdout, flush=True, end='')
                     lines += 1
@@ -83,8 +93,6 @@ def run():
     Parse CLI arguments and start monitoring for docker container logs
     """
     parser = argparse.ArgumentParser(description="Follow docker container logs and survive restarts")
-    parser.add_argument("container_name",
-                        help="name of the docker container to obtain logs from")
     parser.add_argument("-q",
                         "--quiet",
                         dest="log_level",
@@ -106,5 +114,10 @@ def run():
                         action="store_const",
                         default=True,
                         const=False)
+    parser.add_argument("container_name",
+                        help="name of the docker container to obtain logs from")
+    parser.add_argument("file",
+                        nargs="?",
+                        help="optionally a file to tail in the container")
 
     monitor(parser.parse_args(sys.argv[1:]))
