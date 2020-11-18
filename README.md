@@ -19,7 +19,7 @@ As simple as:
 $ fdl my_docker_container_name
 ```
 
-Or instead tail a specific file in the container (required `tail` to be available in the container):
+Or instead tail a specific file in the container (requires `tail` to be available in the container):
 ```shell
 $ fdl my_docker_container_name /var/log/somelogfile.log
 ``` 
