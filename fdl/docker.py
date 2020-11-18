@@ -3,6 +3,7 @@ import subprocess
 import sys
 import time
 import argparse
+from typing import List
 
 
 def check(container_name: str) -> str:
@@ -16,14 +17,14 @@ def check(container_name: str) -> str:
         capture_output=True).stdout.decode().strip()
 
 
-def follow(container_name: str, file: str = None):
+def follow(container_name: str, file: List[str] = None):
     """
     Issue a 'docker logs -f' for our container and continue yielding lines of output until the container is running
     :param container_name: name of the docker container
-    :param file: optionally a file to tail instead of docker logs
+    :param file: optionally a list of files to tail instead of docker logs
     """
     if file:
-        command = ["docker", "exec", container_name, "tail", "-n", "0", "-F", file]
+        command = ["docker", "exec", container_name, "tail", "-q", "-n", "0", "-F", *file]
     else:
         command = ["docker", "logs", "-f", container_name]
     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -68,9 +69,9 @@ def monitor(args):
 
                 waiting_for_online = False
 
-                if args.file:
+                if len(args.file) > 0:
                     log.log(logging.INFO,
-                            f"tailing {args.file} in \"{args.container_name}\" with id {container_id[:12]}")
+                            f"tailing {':'.join(args.file)} in \"{args.container_name}\" with id {container_id[:12]}")
                 else:
                     log.log(logging.INFO, f"following container \"{args.container_name}\" with id {container_id[:12]}")
 
@@ -117,7 +118,7 @@ def run():
     parser.add_argument("container_name",
                         help="name of the docker container to obtain logs from")
     parser.add_argument("file",
-                        nargs="?",
-                        help="optionally a file to tail in the container")
+                        nargs="*",
+                        help="optionally a list of files to tail in the container")
 
     monitor(parser.parse_args(sys.argv[1:]))
