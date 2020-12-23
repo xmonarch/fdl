@@ -26,7 +26,7 @@ def follow(container_name: str, file: List[str] = None):
     if file:
         command = ["docker", "exec", container_name, "tail", "-q", "-n", "0", "-F", *file]
     else:
-        command = ["docker", "logs", "-f", container_name]
+        command = ["docker", "logs", "-f", container_name, "-n", "0"]
     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while True:
         return_code = p.poll()
@@ -51,21 +51,13 @@ def monitor(args):
     try:
         waiting_for_online = False
         container_id: str = ''
-        lines: int = 0
         while True:
             new_container_id = check(args.container_name)
             if new_container_id:
-                skip = 0
-                if container_id == new_container_id:
-                    # when the same container is resumed we need to hide the lines that were already displayed
-                    # on the terminal, since 'docker logs -f' will return old output as well
-                    if args.skip_enabled and not args.file:
-                        skip = lines
-                else:
-                    if container_id:
-                        log.log(logging.INFO,
-                                f"observed container id change: [{container_id[:12]}] -> [{new_container_id[:12]}]")
-                    container_id = new_container_id
+                if container_id:
+                    log.log(logging.INFO,
+                            f"observed container id change: [{container_id[:12]}] -> [{new_container_id[:12]}]")
+                container_id = new_container_id
 
                 waiting_for_online = False
 
@@ -75,11 +67,8 @@ def monitor(args):
                 else:
                     log.log(logging.INFO, f"following container \"{args.container_name}\" [{container_id[:12]}]")
 
-                lines = 0
                 for line in follow(args.container_name, args.file):
-                    if lines >= skip:
-                        print(line.decode(), file=sys.stdout, flush=True, end='')
-                    lines += 1
+                    print(line.decode(), file=sys.stdout, flush=True, end='')
             else:
                 if not waiting_for_online:
                     log.log(logging.WARNING, f"waiting for container \"{args.container_name}\" to become active...")
@@ -108,13 +97,6 @@ def run():
                         action="store",
                         type=int,
                         default=1)
-    parser.add_argument("-a",
-                        "--all",
-                        dest="skip_enabled",
-                        help="don't attempt to hide output from previous container runs",
-                        action="store_const",
-                        default=True,
-                        const=False)
     parser.add_argument("container_name",
                         help="name of the docker container to obtain logs from")
     parser.add_argument("file",
