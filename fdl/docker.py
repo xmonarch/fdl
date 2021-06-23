@@ -5,6 +5,8 @@ import time
 import argparse
 from typing import List
 
+import pkg_resources
+
 
 def check(container_name: str) -> str:
     """
@@ -27,7 +29,7 @@ def follow(container_name: str, file: List[str] = None):
         command = ["docker", "exec", container_name, "tail", "-q", "-n", "0", "-F", *file]
     else:
         command = ["docker", "logs", "-f", container_name, "-n", "0"]
-    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while True:
         return_code = p.poll()
         line = p.stdout.readline()
@@ -55,8 +57,12 @@ def monitor(args):
             new_container_id = check(args.container_name)
             if new_container_id:
                 if container_id:
-                    log.log(logging.INFO,
-                            f"observed container id change: [{container_id[:12]}] -> [{new_container_id[:12]}]")
+                    if new_container_id == container_id:
+                        log.log(logging.INFO,
+                                f"re-connected to container: [{container_id[:12]}]")
+                    else:
+                        log.log(logging.INFO,
+                                f"observed container id change: [{container_id[:12]}] -> [{new_container_id[:12]}]")
                 container_id = new_container_id
 
                 waiting_for_online = False
@@ -83,6 +89,7 @@ def run():
     Parse CLI arguments and start monitoring for docker container logs
     """
     parser = argparse.ArgumentParser(description="Follow docker container logs and survive restarts")
+    parser.add_argument('-v', '--version', action='version', version=pkg_resources.require("fdl")[0].version)
     parser.add_argument("-q",
                         "--quiet",
                         dest="log_level",

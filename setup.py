@@ -3,7 +3,7 @@ import pathlib
 from setuptools import setup
 
 setup(name='fdl',
-      version='0.1.2',
+      version='0.1.3',
       author='xmonarch',
       author_email='xmonarch64@gmail.com',
       packages=['fdl'],
