@@ -16,22 +16,22 @@ $ pip install --user .
 
 As simple as:
 ```shell
-$ fdl my_docker_container_name
+$ fdl con1
 ```
 
 Or instead tail specific files in the container (requires `tail` to be available in the container):
 ```shell
-$ fdl my_docker_container_name:/var/log/somelogfile.log:/var/log/someotherlogfile.log
+$ fdl con1:~/log1.log:/tmp/log2.log
 ``` 
 
 It's possible to follow logs from multiple containers (also combined with files from those containers):
 ```shell
-$ fdl my_docker_container_name1 my_docker_container_name2:/var/log/somelogfile.log:/var/log/someotherlogfile.log my_docker_container_name3
+$ fdl con1 con2:~/log1.log:/tmp/log2.log con3
 ```
 
 In order to add a custom alias for container use the following syntax:
 ```shell
-$ fdl alias/my_docker_container_name1:/var/log/somelogfile.log:/var/log/someotherlogfile.log
+$ fdl a/con1 b/con2 c/con3
 ```
 
 For more details run:
