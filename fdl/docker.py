@@ -1,7 +1,5 @@
-import os
 import subprocess
 import sys
-import textwrap
 import threading
 import time
 import argparse
@@ -21,9 +19,10 @@ def check(container_name: str) -> str:
         capture_output=True).stdout.decode().strip()
 
 
-def follow(container_name: str, file: List[str] = None):
+def follow(event: threading.Event, container_name: str, file: List[str] = None):
     """
     Issue a 'docker logs -f' for our container and continue yielding lines of output until the container is running
+    :param event: for thread communication
     :param container_name: name of the docker container
     :param file: optionally a list of files to tail instead of docker logs
     """
@@ -32,7 +31,7 @@ def follow(container_name: str, file: List[str] = None):
     else:
         command = ["docker", "logs", "-f", container_name, "-n", "0"]
     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    while True:
+    while not event.is_set():
         return_code = p.poll()
         line = p.stdout.readline()
         yield line
@@ -40,12 +39,14 @@ def follow(container_name: str, file: List[str] = None):
             break
 
 
-def monitor_container(interval: int, name: str, alias: str, separator: str, files: List[str] = None):
+def monitor_container(event: threading.Event, interval: int, name: str, alias: str, separator: str,
+                      files: List[str] = None):
     """
     Continuously display logs from the selected docker container.
     - When the container is running the output is printed to the terminal.
     - When container is stopped the script will wait until it's back online.
     - When the container is restarted the script will hide the lines of output that were already displayed.
+    :param event: threading event to communicate with this thread
     :param interval: live check interval
     :param name: container name
     :param alias: alias to display in logs
@@ -54,7 +55,7 @@ def monitor_container(interval: int, name: str, alias: str, separator: str, file
     """
     waiting_for_online = False
     container_id: str = ''
-    while True:
+    while not event.is_set():
         new_container_id = check(name)
         if new_container_id:
             if container_id:
@@ -73,7 +74,7 @@ def monitor_container(interval: int, name: str, alias: str, separator: str, file
             else:
                 print(f'{alias}{separator}(Debug) following [{container_id[:12]}]', file=sys.stdout, flush=True)
 
-            for line in follow(name, files):
+            for line in follow(event, name, files):
                 line_d = line.decode()
                 if len(line_d.strip()) > 0:
                     print(f'{alias}{separator}{line_d}', file=sys.stdout, flush=True, end='')
@@ -113,13 +114,18 @@ def monitor(args):
             max_alias_length = len(alias)
 
     threads: List[threading.Thread] = []
+    event: threading.Event = threading.Event()
     try:
         for container in containers:
             thread = threading.Thread(target=monitor_container,
-                                      args=(args.interval, container[0], container[1], container[2]))
+                                      args=(event, args.interval, container[0], container[1], container[2]))
             threads.append(thread)
             thread.start()
+        event.wait()
     except KeyboardInterrupt:
+        event.set()
+        for thread in threads:
+            thread.join()
         sys.exit(0)
 
 
